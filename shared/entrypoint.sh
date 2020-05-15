@@ -1,4 +1,4 @@
-#!/usr/bin/dumb-init /bin/bash
+#!/bin/sh
 set -euo pipefail
 
 # first arg is `-f` or `--some-option`

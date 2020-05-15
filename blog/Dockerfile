@@ -55,7 +55,7 @@ RUN set -ex; \
 
 ENTRYPOINT ["entrypoint"]
 
-CMD hugo server -wD -t ${THEME} --bind=0.0.0.0
+CMD cd /home/${CODEUSER}/${BLOGNAME} && hugo server -wD -t ${THEME} --bind=0.0.0.0
 
 
 
