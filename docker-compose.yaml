@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+    blog:
+        container_name: ${CODEUSER}_blog
+        image: frank30941/myblog
+        restart: unless-stopped
+        networks:
+            - netself
+        volumes:
+            - "v_blog:/home/${CODEUSER}"
+        environment:
+            - TZ=Asia/Taipei
+        labels:
+            - traefik.enable=true
+            - "traefik.http.routers.domaintld-http.rule=Host(`blog.${CODEUSER}.nctu.me`)"
+            - traefik.http.routers.domaintld-http.entrypoints=http
+            - "traefik.http.routers.domaintld-https.rule=Host(`blog.${CODEUSER}.nctu.me`)"
+            - traefik.http.routers.domaintld-https.entrypoints=https
+            - traefik.http.routers.domaintld-http.middlewares=domaintld-redirect
+            - traefik.http.middlewares.domaintld-redirect.redirectscheme.scheme=https
+            - "traefik.http.routers.domaintld-https.tls.certresolver=${CODEUSER}"
+volumes:
+    v_blog:
+        name: ${CODEUSER}_blog
+networks:
+    netself:
+        name: ${CODEUSER}
