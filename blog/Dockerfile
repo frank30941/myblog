@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM nginx:stable-alpine
 
 ARG CODEUSER
 
@@ -14,7 +14,6 @@ ARG GITTHEMEURL=https://github.com/bake/solar-theme-hugo.git
 ARG THEME=solar-theme-hugo
 
 ENV CODEUSER=${CODEUSER}
-ENV BLOGNAME=${BLOGNAME}
 ENV HUGO_VERSION=${HUGO_VERSION}
 ENV GITTHEMEURL=${GITTHEMEURL}
 ENV THEME=${THEME}
@@ -31,31 +30,22 @@ RUN set -ex; \
 RUN mkdir -p /usr/local/src && \
     cd /usr/local/src && \
     curl -L https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-64bit.tar.gz | tar -xz && \
-    mv hugo /usr/local/bin/hugo && \
-    addgroup -Sg 1000 ${CODEUSER} && \
-    adduser -Sg ${CODEUSER} -u 1000 -h /home/${CODEUSER} ${CODEUSER}; \
-    chown root:${CODEUSER} /usr/local/bin/hugo
-
+    mv hugo /usr/local/bin/hugo
 
 RUN set -ex; \
     curl -sL https://github.com/${CODEUSER}/myblog/raw/master/shared/entrypoint.sh -o /usr/local/bin/entrypoint; \
     chmod +x /usr/local/bin/entrypoint;
 
+COPY ./nginx.conf /etc/nginx/nginx.conf
 
-USER ${CODEUSER}
-
-WORKDIR /home/${CODEUSER}
-
-EXPOSE 1313
+WORKDIR /var/www/
 
 RUN set -ex; \
-    hugo new site ${BLOGNAME} ; \
-    git clone ${GITTHEMEURL} /home/${CODEUSER}/${BLOGNAME}/themes/${THEME} ; \
-    echo "theme = \"${THEME}\"" >> /home/${CODEUSER}/${BLOGNAME}/config.toml
+    hugo new site html; \
+    git clone ${GITTHEMEURL} /var/www/html/themes/${THEME} ; \
+    echo "theme = \"${THEME}\"" >> /var/www/html/config.toml;
 
-ENTRYPOINT ["entrypoint"]
-
-CMD cd /home/${CODEUSER}/${BLOGNAME} && hugo server -wD -t ${THEME} --bind=0.0.0.0
+EXPOSE 80
 
 
 
