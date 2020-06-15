@@ -41,6 +41,7 @@ RUN HUGO_RELEASE=$(curl -sX GET "https://api.github.com/repos/gohugoio/hugo/rele
     mv hugo /usr/local/bin/hugo && \
     chown root:abc /usr/local/bin/hugo;
 
+
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
 WORKDIR /config/workspace/blog
