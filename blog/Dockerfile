@@ -1,23 +1,29 @@
-FROM alpine:latest
+FROM nginx:stable-alpine
 
-ARG CODEUSER
+LABEL image="frank30941/myblog"
+LABEL maintainer="frank30941 <frank30941@gmail.com>"
+LABEL github="https://github.com/frank30941"
+LABEL registry="https://hub.docker.com/u/frank30941"
 
-LABEL image="$CODEUSER/code-server"
-LABEL maintainer="$CODEUSER <frank30941@gmail.com>"
-LABEL github="https://github.com/$CODEUSER"
-LABEL registry="https://hub.docker.com/u/$CODEUSER"
+ENV HUGO_RELEASE=""
+ENV HUGO_VERSION=""
+ENV HOME="/config"
+ENV USER=abc
+ENV UID=1001
+ENV GID=1001
 
-ARG CODEUSER
-ARG BLOGNAME=myblog
-ARG HUGO_VERSION=0.70.0
-ARG GITTHEMEURL=https://github.com/bake/solar-theme-hugo.git
-ARG THEME=solar-theme-hugo
-
-ENV CODEUSER=${CODEUSER}
-ENV BLOGNAME=${BLOGNAME}
-ENV HUGO_VERSION=${HUGO_VERSION}
-ENV GITTHEMEURL=${GITTHEMEURL}
-ENV THEME=${THEME}
+RUN addgroup --gid "$GID" "$USER" && \
+    adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "$HOME" \
+    --ingroup "$USER" \
+    --no-create-home \
+    --uid "$UID" \
+    "$USER" && \
+    mkdir -p /config/workspace/blog && \
+    chown -R abc:abc "$HOME" && \
+    ln -s /config/workspace/blog /usr/share/nginx/html/;
 
 RUN set -ex; \
     apk add --no-cache \
@@ -27,35 +33,16 @@ RUN set -ex; \
     build-base \
     libc6-compat
 
-
-RUN mkdir -p /usr/local/src && \
+RUN HUGO_RELEASE=$(curl -sX GET "https://api.github.com/repos/gohugoio/hugo/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
+    HUGO_VERSION=$(echo "$HUGO_RELEASE" | awk '{print substr($1,2); }') && \
+    mkdir -p /usr/local/src && \
     cd /usr/local/src && \
     curl -L https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-64bit.tar.gz | tar -xz && \
     mv hugo /usr/local/bin/hugo && \
-    addgroup -Sg 1000 ${CODEUSER} && \
-    adduser -Sg ${CODEUSER} -u 1000 -h /home/${CODEUSER} ${CODEUSER}; \
-    chown root:${CODEUSER} /usr/local/bin/hugo
+    chown root:abc /usr/local/bin/hugo;
 
+COPY ./nginx.conf /etc/nginx/nginx.conf
 
-RUN set -ex; \
-    curl -sL https://github.com/${CODEUSER}/myblog/raw/master/shared/entrypoint.sh -o /usr/local/bin/entrypoint; \
-    chmod +x /usr/local/bin/entrypoint;
+WORKDIR /config/workspace/blog
 
-
-USER ${CODEUSER}
-
-WORKDIR /home/${CODEUSER}
-
-EXPOSE 1313
-
-RUN set -ex; \
-    hugo new site ${BLOGNAME} ; \
-    git clone ${GITTHEMEURL} /home/${CODEUSER}/${BLOGNAME}/themes/${THEME} ; \
-    echo "theme = \"${THEME}\"" >> /home/${CODEUSER}/${BLOGNAME}/config.toml
-
-ENTRYPOINT ["entrypoint"]
-
-CMD cd /home/${CODEUSER}/${BLOGNAME} && hugo server -wD -t ${THEME} --bind=0.0.0.0
-
-
-
+EXPOSE 80
