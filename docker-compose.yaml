@@ -9,7 +9,7 @@ services:
         volumes:
             - "v_blog:/config/"
         environment:
-            - "HUGO_BASEURL=blog.${CODEUSER}.nctu.me"
+            - "HUGO_BASEURL=${BLOGDOMAINNAME}"
             - TZ=Asia/Taipei
         labels:
             - traefik.enable=true
