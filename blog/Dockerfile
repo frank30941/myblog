@@ -20,9 +20,10 @@ RUN addgroup --gid "$GID" "$USER" && \
     --ingroup "$USER" \
     --no-create-home \
     --uid "$UID" \
-    "$USER" && \
+    "$USER"; \
     mkdir -p /config/workspace/blog && \
     chown -R abc:abc "$HOME" && \
+    chown -R abc:abc /config && \
     ln -s /config/workspace/blog /usr/share/nginx/html/;
 
 RUN set -ex; \
