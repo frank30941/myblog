@@ -5,24 +5,31 @@ services:
         image: frank30941/myblog
         restart: unless-stopped
         networks:
-            - netself
+            - worknet
         volumes:
-            - "v_blog:/config/"
+            - "workspace:/config/"
         environment:
-#            - "HUGO_BASEURL=${BLOGDOMAINNAME}"
             - TZ=Asia/Taipei
-        labels:
-            - traefik.enable=true
-            - "traefik.http.routers.blog-http.rule=${BLOGDOMAINNAME}"
-            - traefik.http.routers.blog-http.entrypoints=http
-            - "traefik.http.routers.blog-https.rule=${BLOGDOMAINNAME}"
-            - traefik.http.routers.blog-https.entrypoints=https
-            - traefik.http.routers.blog-http.middlewares=blog-redirect
-            - traefik.http.middlewares.blog-redirect.redirectscheme.scheme=https
-            - "traefik.http.routers.blog-https.tls.certresolver=${CODEUSER}"
+        deploy:
+            replicas: 2
+            labels:
+                - traefik.enable=true
+                - "traefik.http.routers.blog-http.rule=${BLOGDOMAINNAME}"
+                - traefik.http.routers.blog-http.entrypoints=http
+                - "traefik.http.routers.blog-https.rule=${BLOGDOMAINNAME}"
+                - traefik.http.routers.blog-https.entrypoints=https
+                - traefik.http.routers.blog-http.middlewares=blog-redirect
+                - traefik.http.middlewares.blog-redirect.redirectscheme.scheme=https
+                - traefik.http.routers.blog-https.middlewares=blog-redirectregex
+                - "traefik.http.middlewares.blog-redirectregex.redirectregex.regex=${REDIRECTREGEX_FROM}(.*)"
+                - "traefik.http.middlewares.blog-redirectregex.redirectregex.replacement=${REDIRECTREGEX_TO}$${1}"
+                - "traefik.http.routers.blog-https.tls.certresolver=${CODEUSER}"
+                - "traefik.http.services.blog-service.loadbalancer.server.port=80"
 volumes:
-    v_blog:
-        name: ${CODEUSER}_cs
+    workspace:
+        external: true
+        name: workspace
 networks:
-    netself:
-        name: ${CODEUSER}
+    worknet:
+        external: true
+        name: worknet
