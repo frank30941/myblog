@@ -9,7 +9,8 @@ services:
         volumes:
             - "v_blog:/config/"
         environment:
-#            - "HUGO_BASEURL=${BLOGDOMAINNAME}"
+            - PUID=${UID}
+            - PGID=${GID}
             - TZ=Asia/Taipei
         labels:
             - traefik.enable=true

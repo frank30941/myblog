@@ -1,0 +1,29 @@
+#!bin/sh
+
+if [ -z ${PUID+x} ]; then 
+  PUID=1001;
+fi
+
+if [ -z ${PGID+x} ]; then 
+  PGID=1001;
+fi
+
+if [ -z ${WORKPATH+x} ]; then 
+  WORKPATH="blog";
+fi
+
+addgroup --gid "$PGID" abc && \
+    adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/config" \
+    --ingroup abc \
+    --no-create-home \
+    --uid "$PUID" \
+    abc;
+
+mkdir -p /config/workspace/${WORKPATH}/public; \
+ln -s "/config/workspace/${WORKPATH}/public/" /usr/share/nginx/html/; \
+chown -R abc:abc /config;
+
+exec "nginx" "-g" "daemon off;"
