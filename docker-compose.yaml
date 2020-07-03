@@ -9,6 +9,8 @@ services:
         volumes:
             - "workspace:/config/"
         environment:
+            - PUID=${UID}
+            - PGID=${GID}
             - TZ=Asia/Taipei
         deploy:
             replicas: 2
