@@ -2,7 +2,7 @@ version: '3.7'
 services:
     blog:
         container_name: ${CODEUSER}_blog
-        image: frank30941/myblog
+        image: frank30941/myblog:latest
         restart: unless-stopped
         networks:
             - worknet
