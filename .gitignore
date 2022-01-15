@@ -1,3 +1,4 @@
 .env
 *.env
 ps.yml
+node_modules
